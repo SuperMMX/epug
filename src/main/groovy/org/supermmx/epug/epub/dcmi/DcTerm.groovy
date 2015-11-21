@@ -6,4 +6,13 @@ abstract class DcTerm {
     String uri
     String definition
     String type
+    String baseUri
+
+    String getUri() {
+        if (!uri) {
+            uri = baseUri + name
+        }
+
+        return uri
+    }
 }
