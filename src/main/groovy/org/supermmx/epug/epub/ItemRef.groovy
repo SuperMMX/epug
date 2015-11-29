@@ -2,6 +2,10 @@ package org.supermmx.epug.epub
 
 class ItemRef extends Element {
     String idref
-    YesNoEnum linear = YesNoEnum.yes
+    boolean linear = true
     List<String> properties = []
+
+    ItemRef(String idref) {
+        this.idref = idref
+    }
 }
