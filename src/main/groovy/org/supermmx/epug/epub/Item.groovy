@@ -6,4 +6,10 @@ class Item extends Element {
     String fallback
     List<String> properties = []
     String mediaOverlay
+
+    Item(String id, String href, String mediaType) {
+        this.id = id
+        this.href = href
+        this.mediaType = mediaType
+    }
 }
