@@ -11,4 +11,8 @@ class Rendition {
     Metadata metadata = new Metadata()
     Manifest manifest = new Manifest()
     Spine spine = new Spine()
+
+    Item findItem(String id) {
+        return manifest.items[(id)]
+    }
 }
