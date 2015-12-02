@@ -37,12 +37,16 @@ class EpubCreator {
      */
     Item addItem(String srcPath, String destPath, String id) {
         // TODO: generate id if necessary
+        if (!id) {
+            id = destPath
+        }
 
         String mediaType = ''
         Item item = new Item(id, destPath, mediaType)
         publication.rendition.manifest.items[(id)] = item
 
         // TODO: load the item into the storage
+        storage.addResource(srcPath, destPath)
 
         return item
     }
@@ -62,6 +66,9 @@ class EpubCreator {
      * @param outputFile the output file
      */
     void write(File outputFile) {
+        EpubWriter writer = new EpubWriter(publication: publication,
+                                           destPath: new File('build/output'))
+        writer.write()
     }
 
     void write(OutputStream os) {
