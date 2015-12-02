@@ -1,5 +1,6 @@
 package org.supermmx.epug.storage
 
 interface Storage {
-    File getSourceBaseDir()
+    void addResource(String srcPath, String destPath)
+    byte[] getResource(String destPath)
 }
