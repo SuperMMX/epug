@@ -2,23 +2,38 @@ package org.supermmx.epug.creator
 
 import org.supermmx.epug.epub.Publication
 import org.supermmx.epug.epub.Rendition
+import org.supermmx.epug.storage.Storage
 
 import groovy.xml.MarkupBuilder
+
+import java.io.FileOutputStream
+import java.io.StringWriter
+import java.nio.charset.Charset
+import java.util.zip.ZipOutputStream
+import java.util.zip.ZipEntry
 
 class EpubWriter {
     Publication publication
     File destPath
+    Storage storage
+
+    private ZipOutputStream zip
 
     void write() {
-        if (!destPath.exists()) {
-            destPath.mkdirs()
+        File dir = destPath.getParentFile()
+        if (!dir.exists()) {
+            dir.mkdirs()
         }
+
+        zip = new ZipOutputStream(new FileOutputStream(destPath), Charset.forName('UTF-8'))
 
         writeContainer()
 
         publication.renditions.eachWithIndex { rendition, index ->
             writeRendition(rendition, index)
         }
+
+        zip.close()
     }
 
     protected void writeContainer() {
@@ -27,23 +42,17 @@ class EpubWriter {
     }
 
     protected void writeMimetype() {
-        File mimetypeFile = new File(destPath, 'mimetype')
-        File parentFile = mimetypeFile.getParentFile()
-        if (!parentFile.exists()) {
-            parentFile.mkdirs()
-        }
+        zip.putNextEntry(new ZipEntry('mimetype'))
 
-        mimetypeFile << 'application/epub+zip'
+        zip.write('application/epub+zip'.getBytes('UTF-8'))
+
+        zip.closeEntry()
     }
 
     protected void writeContainerXml() {
-        File container = new File(destPath, 'META-INF/container.xml')
-        File parentFile = container.getParentFile()
-        if (!parentFile.exists()) {
-            parentFile.mkdirs()
-        }
+        zip.putNextEntry(new ZipEntry('META-INF/container.xml'))
 
-        FileWriter writer = new FileWriter(container)
+        def writer = new StringWriter()
         new MarkupBuilder(writer).container(xmlns: 'urn:oasis:names:tc:opendocument:xmlns:container', version: '1.0') {
             rootfiles {
                 publication.renditions.eachWithIndex { rendition, index ->
@@ -52,6 +61,10 @@ class EpubWriter {
                 }
             }
         }
+
+        zip.write(writer.toString().getBytes('UTF-8'))
+
+        zip.closeEntry()
     }
 
     protected void writeRendition(Rendition rendition, int index) {
@@ -65,18 +78,15 @@ class EpubWriter {
     }
 
     protected void writePackageDocument(Rendition rendition, int index) {
-        File packageDocument = new File(destPath, "OEBPS-${index}/content.opf")
-        File parentFile = packageDocument.getParentFile()
-        if (!parentFile.exists()) {
-            parentFile.mkdirs()
-        }
+        zip.putNextEntry(new ZipEntry("OEBPS-${index}/content.opf"))
 
-        FileWriter writer = new FileWriter(packageDocument)
+        def writer = new StringWriter()
 
         MarkupBuilder builder = new MarkupBuilder(writer)
         builder.setOmitNullAttributes(true)
         builder.setOmitEmptyAttributes(true)
-        builder.package(version: '3.0',
+        builder.package(xmlns: 'http://www.idpf.org/2007/opf',
+                        version: '3.0',
                         'unique-identifier': rendition.uniqueIdentifier) {
             metadata('xmlns:dc': 'http://purl.org/dc/elements/1.1/') {
                 rendition.metadata.dcTerms.each { dcTerm ->
@@ -110,9 +120,18 @@ class EpubWriter {
 
             }
         }
+
+        zip.write(writer.toString().getBytes('UTF-8'))
+
+        zip.closeEntry()
     }
 
     protected void writeContent(Rendition rendition, int index) {
-
+        rendition.manifest.items.each { key, item ->
+            byte[] content = storage.getResource(item.href)
+            zip.putNextEntry(new ZipEntry("OEBPS-${index}/${item.href}"))
+            zip.write(content)
+            zip.closeEntry()
+        }
     }
 }

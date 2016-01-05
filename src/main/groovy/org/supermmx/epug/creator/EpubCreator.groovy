@@ -67,7 +67,8 @@ class EpubCreator {
      */
     void write(File outputFile) {
         EpubWriter writer = new EpubWriter(publication: publication,
-                                           destPath: new File('build/output'))
+                                           destPath: outputFile,
+                                           storage: storage)
         writer.write()
     }
 
