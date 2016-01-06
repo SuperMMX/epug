@@ -4,6 +4,10 @@ import org.supermmx.epug.epub.Publication
 import org.supermmx.epug.epub.Rendition
 import org.supermmx.epug.epub.Item
 import org.supermmx.epug.epub.ItemRef
+import org.supermmx.epug.epub.Meta
+import org.supermmx.epug.epub.dcmi.DcElement
+import org.supermmx.epug.epub.dcmi.DcTerm
+import org.supermmx.epug.epub.dcmi.DcmiTerm
 import org.supermmx.epug.storage.Storage
 import org.supermmx.epug.storage.MemoryStorage
 
@@ -60,6 +64,20 @@ class EpubCreator {
         return ref
     }
 
+    Meta addMetaModified(Date date) {
+        Meta dateMeta = new Meta(property: "dcterms:${DcmiTerm.modified.name}",
+                                 value: date.format("yyyy-MM-dd'T'HH:mm:ssXXX", TimeZone.getTimeZone('UTC')));
+        publication.rendition.metadata.metas << dateMeta
+
+        return dateMeta
+    }
+
+    DcElement addDcElement(DcTerm term, String value, String id) {
+        DcElement dc = new DcElement(id: id, term: term, value: value)
+        publication.rendition.metadata.dcTerms << dc
+
+        return dc
+    }
     /**
      * Write the publication
      *
