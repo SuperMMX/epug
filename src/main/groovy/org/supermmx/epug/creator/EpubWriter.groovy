@@ -90,13 +90,13 @@ class EpubWriter {
                         'unique-identifier': rendition.uniqueIdentifier) {
             metadata('xmlns:dc': 'http://purl.org/dc/elements/1.1/') {
                 rendition.metadata.dcTerms.each { dcTerm ->
-                    "dc:${dcTerm.term.name}"(dcTerm.value)
+                    "dc:${dcTerm.term.name}"(id: dcTerm.id, dcTerm.value)
                 }
                 rendition.metadata.metas.each { meta ->
-                    meta(refines: meta.refines,
-                         property: meta.property,
-                         scheme: meta.scheme,
-                         meta.value)
+                    builder.meta(refines: meta.refines,
+                                 property: meta.property,
+                                 scheme: meta.scheme,
+                                 meta.value)
                 }
             }
 
