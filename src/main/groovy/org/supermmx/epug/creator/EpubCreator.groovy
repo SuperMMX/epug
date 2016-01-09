@@ -5,6 +5,7 @@ import org.supermmx.epug.epub.Rendition
 import org.supermmx.epug.epub.Item
 import org.supermmx.epug.epub.ItemRef
 import org.supermmx.epug.epub.Meta
+import org.supermmx.epug.epub.MediaType
 import org.supermmx.epug.epub.dcmi.DcElement
 import org.supermmx.epug.epub.dcmi.DcTerm
 import org.supermmx.epug.epub.dcmi.DcmiTerm
@@ -45,7 +46,11 @@ class EpubCreator {
             id = destPath
         }
 
-        String mediaType = ''
+        def extIndex = srcPath.lastIndexOf('.')
+        def ext = ''
+        ext = srcPath.substring(extIndex + 1)
+        MediaType mediaType = MediaType.fromString(ext)
+
         Item item = new Item(id, destPath, mediaType)
         publication.rendition.manifest.items[(id)] = item
 

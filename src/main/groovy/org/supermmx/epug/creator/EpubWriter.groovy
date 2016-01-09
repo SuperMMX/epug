@@ -107,7 +107,7 @@ class EpubWriter {
                     builder.item(id: item.id,
                                  href: item.href,
                                  properties: item.properties.join(' '),
-                                 'media-type': item.mediaType)
+                                 'media-type': item.mediaType.mime)
                 }
             }
 
