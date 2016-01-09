@@ -95,7 +95,7 @@ class EpubWriter {
                 rendition.metadata.metas.each { meta ->
                     builder.meta(id: meta.id,
                                  'xml:lang': meta.lang,
-                                 refines: meta.refines,
+                                 refines: meta.refines == null ? null: "#${meta.refines}",
                                  property: meta.property,
                                  scheme: meta.scheme,
                                  meta.value)

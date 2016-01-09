@@ -64,6 +64,16 @@ class EpubCreator {
         return ref
     }
 
+    Meta addMeta(String property, String value, Meta refinedMeta) {
+        Meta meta = new Meta(property: property, value: value)
+        if (refines != null) {
+            meta.refines = refinedMeta.id
+        }
+        publication.rendition.metadata.metas << meta
+
+        return meta
+    }
+
     Meta addMetaModified(Date date) {
         Meta dateMeta = new Meta(property: "dcterms:${DcmiTerm.modified.name}",
                                  value: date.format("yyyy-MM-dd'T'HH:mm:ssXXX", TimeZone.getTimeZone('UTC')));
