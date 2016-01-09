@@ -93,7 +93,9 @@ class EpubWriter {
                     "dc:${dcTerm.term.name}"(id: dcTerm.id, dcTerm.value)
                 }
                 rendition.metadata.metas.each { meta ->
-                    builder.meta(refines: meta.refines,
+                    builder.meta(id: meta.id,
+                                 'xml:lang': meta.lang,
+                                 refines: meta.refines,
                                  property: meta.property,
                                  scheme: meta.scheme,
                                  meta.value)
