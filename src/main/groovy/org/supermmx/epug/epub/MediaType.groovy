@@ -21,8 +21,8 @@ enum MediaType {
 
     private static final Map<String, MediaType> extMap = [:]
     static {
-        MediaType.values().each { mediaType ->
-            mediaType.exts.each { ext ->
+        MediaType.values().each { MediaType mediaType ->
+            mediaType.exts.each { String ext ->
                 extMap[(ext)] = mediaType
             }
         }

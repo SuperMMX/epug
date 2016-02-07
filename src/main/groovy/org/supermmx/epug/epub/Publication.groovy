@@ -13,7 +13,7 @@ class Publication {
     List<Rendition> renditions = [ new Rendition() ]
 
     Rendition getDefaultRendition() {
-        def rendition = null
+        Rendition rendition = null
 
         if (renditions.size() > 0) {
             rendition = renditions[0]
