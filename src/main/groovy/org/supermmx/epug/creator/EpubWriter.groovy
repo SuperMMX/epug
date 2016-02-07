@@ -1,5 +1,8 @@
 package org.supermmx.epug.creator
 
+import org.supermmx.epug.epub.MediaType
+import org.supermmx.epug.epub.Navigation
+import org.supermmx.epug.epub.NavigationItem
 import org.supermmx.epug.epub.Publication
 import org.supermmx.epug.epub.Rendition
 import org.supermmx.epug.storage.Storage
@@ -13,6 +16,8 @@ import java.util.zip.ZipOutputStream
 import java.util.zip.ZipEntry
 
 class EpubWriter {
+    static final String NAV_FILE = 'epub-nav.xhtml'
+
     Publication publication
     File destPath
     Storage storage
@@ -70,7 +75,65 @@ class EpubWriter {
     protected void writeRendition(Rendition rendition, int index) {
         writePacakge(rendition, index)
 
+        writeNavDocument(rendition, index)
+
         writeContent(rendition, index)
+    }
+
+    protected void writeNavDocument(Rendition rendition, int index) {
+        if (rendition.navs.size() == 0) {
+            Navigation nav = new Navigation(type: Navigation.Type.toc,
+                                            title: '')
+            NavigationItem item = new NavigationItem()
+            rendition.navs << nav
+        }
+
+        zip.putNextEntry(new ZipEntry("OEBPS-${index}/${NAV_FILE}"))
+
+        def writer = new StringWriter()
+
+        MarkupBuilder builder = new MarkupBuilder(writer)
+        builder.setOmitNullAttributes(true)
+
+        def navItemAction = { item ->
+            if (item in Navigation) {
+                if (item.type == Navigation.Type.toc) {
+                    // TODO: I18N
+                    builder.h1('Table of Contents')
+                }
+            } else {
+                builder.a(href: item.file + item.anchor ? ("#${item.anchor}") : '',
+                          item.title)
+            }
+
+            builder.ol {
+                item.items.each { subItem ->
+                    li {
+                        navItemAction(subItem)
+                    }
+                }
+            }
+        }
+
+        builder.pi('xml': [version: '1.0', encoding: 'UTF-8'])
+        builder.yield('<!DOCTYPE html>\n', false)
+        builder.html(xmlns: 'http://www.w3.org/1999/xhtml',
+                     'xmlns:epub': 'http://www.idpf.org/2007/ops') {
+            head {
+                meta(charset: 'utf-8')
+            }
+            body {
+                rendition.navs.each { nav ->
+                    builder.nav('epub:type': nav.type) {
+                        navItemAction(nav)
+                    }
+                }
+            }
+        }
+
+        zip.write(writer.toString().getBytes('UTF-8'))
+
+        zip.closeEntry()
     }
 
     protected void writePacakge(Rendition rendition, int index) {
@@ -103,6 +166,12 @@ class EpubWriter {
             }
 
             manifest {
+                // nav document
+                item(id: 'epub-nav',
+                     href: NAV_FILE,
+                     properties: 'nav',
+                     'media-type': MediaType.XHTML.mime)
+
                 rendition.manifest.items.each { id, item ->
                     builder.item(id: item.id,
                                  href: item.href,
