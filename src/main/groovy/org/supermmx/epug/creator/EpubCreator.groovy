@@ -6,6 +6,7 @@ import org.supermmx.epug.epub.Item
 import org.supermmx.epug.epub.ItemRef
 import org.supermmx.epug.epub.Meta
 import org.supermmx.epug.epub.MediaType
+import org.supermmx.epug.epub.Navigation
 import org.supermmx.epug.epub.dcmi.DcElement
 import org.supermmx.epug.epub.dcmi.DcTerm
 import org.supermmx.epug.epub.dcmi.DcmiTerm
@@ -93,6 +94,13 @@ class EpubCreator {
 
         return dc
     }
+
+    Navigation addNavigation(Navigation nav) {
+        publication.rendition.navs << nav
+
+        return nav
+    }
+
     /**
      * Write the publication
      *

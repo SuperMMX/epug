@@ -12,6 +12,8 @@ class Rendition {
     Manifest manifest = new Manifest()
     Spine spine = new Spine()
 
+    List<Navigation> navs = []
+
     Item findItem(String id) {
         return manifest.items[(id)]
     }
