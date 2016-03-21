@@ -95,21 +95,24 @@ class EpubWriter {
         MarkupBuilder builder = new MarkupBuilder(writer)
         builder.setOmitNullAttributes(true)
 
-        def navItemAction = { item ->
+        def navItemAction
+        navItemAction = { item ->
             if (item in Navigation) {
                 if (item.type == Navigation.Type.toc) {
                     // TODO: I18N
                     builder.h1('Table of Contents')
                 }
             } else {
-                builder.a(href: item.file + item.anchor ? ("#${item.anchor}") : '',
+                builder.a(href: item.file + (item.anchor ? ("#${item.anchor}") : ''),
                           item.title)
             }
 
-            builder.ol {
-                item.items.each { subItem ->
-                    li {
-                        navItemAction(subItem)
+            if (item.items.size() > 0) {
+                builder.ol {
+                    item.items.each { subItem ->
+                        li {
+                            navItemAction(subItem)
+                        }
                     }
                 }
             }
