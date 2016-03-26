@@ -5,6 +5,8 @@ import org.supermmx.epug.epub.Navigation
 import org.supermmx.epug.epub.NavigationItem
 import org.supermmx.epug.epub.Publication
 import org.supermmx.epug.epub.Rendition
+import org.supermmx.epug.epub.dcmi.DcElement
+import org.supermmx.epug.epub.dcmi.DcesTerm
 import org.supermmx.epug.storage.Storage
 
 import groovy.xml.MarkupBuilder
@@ -17,6 +19,7 @@ import java.util.zip.ZipEntry
 
 class EpubWriter {
     static final String NAV_FILE = 'epub-nav.xhtml'
+    static final String NCX_FILE = 'epub-ncx.xhtml'
 
     Publication publication
     File destPath
@@ -76,6 +79,7 @@ class EpubWriter {
         writePacakge(rendition, index)
 
         writeNavDocument(rendition, index)
+        writeNcx(rendition, index)
 
         writeContent(rendition, index)
     }
@@ -139,6 +143,65 @@ class EpubWriter {
         zip.closeEntry()
     }
 
+    protected void writeNcx(Rendition rendition, int index) {
+        zip.putNextEntry(new ZipEntry("OEBPS-${index}/${NCX_FILE}"))
+
+        def writer = new StringWriter()
+
+        MarkupBuilder builder = new MarkupBuilder(writer)
+        builder.setOmitNullAttributes(true)
+
+        int navPointIndex = 0
+
+        def navItemAction
+        navItemAction = { item ->
+            if (item in Navigation) {
+                item.items.each { subItem ->
+                    navItemAction(subItem)
+                }
+            } else {
+                navPointIndex ++
+                builder.navPoint(id: "${navPointIndex}",
+                                 playOrder: navPointIndex) {
+                    navLabel {
+                        text item.title
+                    }
+                    content(src: item.file + (item.anchor ? ("#${item.anchor}") : '')) {
+                    }
+
+                    item.items.each { subItem ->
+                        navItemAction(subItem)
+                    }
+                }
+            }
+
+        }
+
+        def title = rendition.metadata.findDcElement { DcElement dc ->
+            dc.term.name == DcesTerm.title.name
+        }?.value
+
+        builder.pi('xml': [version: '1.0', encoding: 'UTF-8'])
+        builder.yield('<!DOCTYPE ncx PUBLIC "-//NISO//DTD ncx 2005-1//EN" "http://www.daisy.org/z3986/2005/ncx-2005-1.dtd">\n', false)
+        builder.ncx(xmlns: 'http://www.daisy.org/z3986/2005/ncx/',
+                    version: '2005-1') {
+            head {
+            }
+            docTitle {
+                text "${title ?: ''}"
+            }
+            navMap {
+                rendition.navs.each { nav ->
+                    navItemAction(nav)
+                }
+            }
+        }
+
+        zip.write(writer.toString().getBytes('UTF-8'))
+
+        zip.closeEntry()
+    }
+
     protected void writePacakge(Rendition rendition, int index) {
         writePackageDocument(rendition, index)
     }
@@ -174,6 +237,10 @@ class EpubWriter {
                      href: NAV_FILE,
                      properties: 'nav',
                      'media-type': MediaType.XHTML.mime)
+                // ncx for Epub 2.0
+                item(id: 'epub-ncx',
+                     href: NCX_FILE,
+                     'media-type': MediaType.NCX.mime)
 
                 rendition.manifest.items.each { id, item ->
                     builder.item(id: item.id,
@@ -184,7 +251,7 @@ class EpubWriter {
             }
 
             rendition.spine.with {
-                spine(id: id, toc: toc, 'page-progression-direction': ppd) {
+                spine(id: id, toc: 'epub-ncx', 'page-progression-direction': ppd) {
                     items.each { item ->
                         itemref(idref: item.idref,
                                 linear: item.linear,

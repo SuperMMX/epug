@@ -17,6 +17,7 @@ enum MediaType {
     MP4('audio/mp4', [ 'mp4' ]),
     CSS('text/css', [ 'css' ]),
     JS('text/javascript', [ 'js' ]),
+    NCX('application/x-dtbncx+xml', [ 'ncx' ]),
     UNKNOWN('application/octet-stream', [])
 
     private static final Map<String, MediaType> extMap = [:]
