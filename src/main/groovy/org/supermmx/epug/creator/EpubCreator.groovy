@@ -70,9 +70,13 @@ class EpubCreator {
         return ref
     }
 
+    Meta addMeta(String property, String value) {
+        return addMeta(property, value, null)
+    }
+
     Meta addMeta(String property, String value, Meta refinedMeta) {
         Meta meta = new Meta(property: property, value: value)
-        if (refines != null) {
+        if (refinedMeta != null) {
             meta.refines = refinedMeta.id
         }
         publication.rendition.metadata.metas << meta
