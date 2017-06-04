@@ -222,12 +222,18 @@ class EpubWriter {
                     "dc:${dcTerm.term.name}"(id: dcTerm.id, dcTerm.value)
                 }
                 rendition.metadata.metas.each { meta ->
-                    builder.meta(id: meta.id,
-                                 'xml:lang': meta.lang,
-                                 refines: meta.refines == null ? null: "#${meta.refines}",
-                                 property: meta.property,
-                                 scheme: meta.scheme,
-                                 meta.value)
+                    if (!meta.obsolete) {
+                        builder.meta(id: meta.id,
+                            'xml:lang': meta.lang,
+                            refines: meta.refines == null ? null: "#${meta.refines}",
+                            property: meta.property,
+                            scheme: meta.scheme,
+                            meta.value)
+                    } else {
+                        // 2.0 format
+                        builder.meta(name: meta.property,
+                            content: meta.value)
+                    }
                 }
             }
 

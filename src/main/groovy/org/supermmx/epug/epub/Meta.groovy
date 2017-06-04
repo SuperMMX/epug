@@ -6,4 +6,7 @@ class Meta extends I18nElement {
     String scheme
 
     String value
+
+    // 2.0 format
+    boolean obsolete
 }
